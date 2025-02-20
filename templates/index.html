@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Modern Chat App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="main-container">
+        <div class="auth-container">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="showTab('join')">Join Room</button>
+                <button class="tab-btn" onclick="showTab('create')">Create Room</button>
+            </div>
+            
+            <div id="join-tab" class="tab-content active">
+                <h2>Join Chat Room</h2>
+                <form method="POST" action="{{ url_for('chat') }}" class="modern-form">
+                    <div class="form-group">
+                        <i class="fas fa-user"></i>
+                        <input type="text" name="username" placeholder="Your username" required>
+                    </div>
+                    <div class="form-group">
+                        <i class="fas fa-key"></i>
+                        <input type="text" name="room" placeholder="Enter room code" required>
+                    </div>
+                    <button type="submit" class="primary-btn">
+                        <i class="fas fa-sign-in-alt"></i> Join Room
+                    </button>
+                </form>
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            </div>
+
+            <div id="create-tab" class="tab-content">
+                <h2>Create New Room</h2>
+                <form method="POST" action="{{ url_for('create_room') }}" class="modern-form">
+                    <div class="form-group">
+                        <i class="fas fa-user"></i>
+                        <input type="text" name="username" placeholder="Your username" required>
+                    </div>
+                    <div class="form-group">
+                        <i class="fas fa-stamp"></i>
+                        <input type="text" name="room_name" placeholder="Room name" required>
+                    </div>
+                    <button type="submit" class="primary-btn">
+                        <i class="fas fa-plus-circle"></i> Create Room
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabName + '-tab').classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function quickJoin() {
+            const code = document.getElementById('quick-code').value.trim();
+            if (code) {
+                window.location.href = `/join/${code}`;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ room_name }} - Chat Room</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <div>
+                <h2>{{ room_name }}</h2>
+                <div class="room-code-display">
+                    Room Code: {{ room }}
+                    <button onclick="copyRoomCode()" class="copy-btn" title="Copy room code">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button onclick="shareRoom()" class="btn">
+                    <i class="fas fa-share-alt"></i> Share
+                </button>
+                <a href="{{ url_for('index') }}" class="btn">
+                    <i class="fas fa-sign-out-alt"></i> Leave
+                </a>
+            </div>
+        </div>
+        
+        <div id="messages" class="messages"></div>
+        
+        <div class="input-area">
+            <input type="text" id="message" placeholder="Type your message..." autocomplete="off">
+            <button onclick="sendMessage()">
+                <i class="fas fa-paper-plane"></i> Send
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        
+        socket.on('message', (data) => {
+            const messages = document.getElementById('messages');
+            const messageElement = document.createElement('div');
+            
+            if (data.username === 'System') {
+                messageElement.className = 'message system';
+            } else if (data.username === '{{ username }}') {
+                messageElement.className = 'message sent';
+            } else {
+                messageElement.className = 'message received';
+            }
+            
+            messageElement.innerHTML = `
+                <strong>${data.username}</strong><br>
+                ${data.message}
+            `;
+            
+            messages.appendChild(messageElement);
+            messages.scrollTop = messages.scrollHeight;
+        });
+
+        function sendMessage() {
+            const messageInput = document.getElementById('message');
+            const message = messageInput.value.trim();
+            
+            if (message) {
+                socket.emit('message', { message: message });
+                messageInput.value = '';
+            }
+            messageInput.focus();
+        }
+
+        document.getElementById('message').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Join room on connect
+        socket.on('connect', () => {
+            socket.emit('join', { room: '{{ room }}' });
+        });
+
+        function copyRoomCode() {
+            navigator.clipboard.writeText('{{ room }}');
+            alert('Room code copied to clipboard!');
+        }
+
+        function shareRoom() {
+            const roomUrl = `${window.location.origin}/join/{{ room }}`;
+            navigator.clipboard.writeText(roomUrl);
+            alert('Room link copied to clipboard!');
+        }
+    </script>
+</body>
+</html>
